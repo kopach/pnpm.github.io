@@ -19,6 +19,6 @@
         <id>フラットな node_modules が唯一の方法ではありません</id>
         <link href="https://pnpm.io/ja/blog/2020/05/27/flat-node-modules-is-not-the-only-way"/>
         <updated>2020-05-27T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[New users of pnpm frequently ask me about the weird structure of node_modules that pnpm creates. Why is it not flat? Where are all the sub-dependencies?]]></summary>
+        <summary type="html"><![CDATA[pnpm の新規ユーザーから、pnpm が生成する node_modules の奇妙な構造についてよく聞かれます。 なぜ平坦な構造を使用しないのでしょうか。 依存のさらにその依存はどこにあるのでしょうか。]]></summary>
     </entry>
 </feed>
