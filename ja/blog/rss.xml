@@ -8,11 +8,11 @@
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <item>
-            <title><![CDATA[Node-Modules configuration options with pnpm]]></title>
+            <title><![CDATA[pnpm でのノードモジュールに関するオプション設定]]></title>
             <link>https://pnpm.io/ja/blog/2020/10/17/node-modules-configuration-options-with-pnpm</link>
-            <guid>Node-Modules configuration options with pnpm</guid>
+            <guid>pnpm でのノードモジュールに関するオプション設定</guid>
             <pubDate>Sat, 17 Oct 2020 00:00:00 GMT</pubDate>
-            <description><![CDATA[There are many ways to create a nodemodules directory. Your goal must be to create the most strict one but if that is not possible, there are options to make a loose nodemodules as well.]]></description>
+            <description><![CDATA[nodemodules ディレクトリを生成する方法は多くあります。 ゆるい nodemodules を作成する方法もありますが、ここでの目標は最も厳格なものを生成することです。]]></description>
         </item>
         <item>
             <title><![CDATA[フラットな node_modules が唯一の方法ではありません]]></title>
