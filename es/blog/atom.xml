@@ -13,6 +13,10 @@
         <link href="https://pnpm.io/es/blog/2020/10/17/node-modules-configuration-options-with-pnpm"/>
         <updated>2020-10-17T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[There are many ways to create a nodemodules directory. Your goal must be to create the most strict one but if that is not possible, there are options to make a loose nodemodules as well.]]></summary>
+        <author>
+            <name>Zoltan Kochan</name>
+            <uri>http://twitter.com/zoltankochan</uri>
+        </author>
     </entry>
     <entry>
         <title type="html"><![CDATA[Flat node_modules is not the only way]]></title>
@@ -20,5 +24,9 @@
         <link href="https://pnpm.io/es/blog/2020/05/27/flat-node-modules-is-not-the-only-way"/>
         <updated>2020-05-27T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[New users of pnpm frequently ask me about the weird structure of node_modules that pnpm creates. Why is it not flat? Where are all the sub-dependencies?]]></summary>
+        <author>
+            <name>Zoltan Kochan</name>
+            <uri>http://twitter.com/zoltankochan</uri>
+        </author>
     </entry>
 </feed>
