@@ -8,18 +8,18 @@
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <item>
-            <title><![CDATA[Node-Modules configuration options with pnpm]]></title>
+            <title><![CDATA[Options de configuration des node_modules avec pnpm]]></title>
             <link>https://pnpm.io/fr/blog/2020/10/17/node-modules-configuration-options-with-pnpm</link>
-            <guid>Node-Modules configuration options with pnpm</guid>
+            <guid>Options de configuration des node_modules avec pnpm</guid>
             <pubDate>Sat, 17 Oct 2020 00:00:00 GMT</pubDate>
-            <description><![CDATA[There are many ways to create a nodemodules directory. Your goal must be to create the most strict one but if that is not possible, there are options to make a loose nodemodules as well.]]></description>
+            <description><![CDATA[Il existe de nombreuses façons de créer un dossier nodemodules. Votre objectif doit être de créer le plus strict, mais si ce n'est pas possible, il y a aussi des options pour faire un nodemodules en vrac.]]></description>
         </item>
         <item>
-            <title><![CDATA[Flat node_modules is not the only way]]></title>
+            <title><![CDATA[Flat node_modules n'est pas le seul moyen]]></title>
             <link>https://pnpm.io/fr/blog/2020/05/27/flat-node-modules-is-not-the-only-way</link>
-            <guid>Flat node_modules is not the only way</guid>
+            <guid>Flat node_modules n'est pas le seul moyen</guid>
             <pubDate>Wed, 27 May 2020 00:00:00 GMT</pubDate>
-            <description><![CDATA[New users of pnpm frequently ask me about the weird structure of node_modules that pnpm creates. Why is it not flat? Where are all the sub-dependencies?]]></description>
+            <description><![CDATA[Les nouveaux utilisateurs de pnpm me posent souvent des questions sur la structure bizarre du dossier node_modules que pnpm créé. Pourquoi n'est-il pas plat ? Où sont toutes les sous-dépendances ?]]></description>
         </item>
     </channel>
 </rss>
