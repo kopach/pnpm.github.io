@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
     <channel>
         <title>pnpm Blog</title>
         <link>https://pnpm.io/zh/blog</link>
@@ -13,6 +13,21 @@
             <guid>pnpm的node_modules配置选项</guid>
             <pubDate>Sat, 17 Oct 2020 00:00:00 GMT</pubDate>
             <description><![CDATA[有多种方式创建nodemodules目录。 但你一定想要以最严格的方式创建，当然如果你的当前项目无法使用严格的nodemodules结构，你可以配置为不严格的。]]></description>
+            <content:encoded><![CDATA[<p>有多种方式创建node_modules目录。 但你一定想要以最严格的方式创建，当然如果你的当前项目无法使用严格的node_modules结构，你可以配置为不严格的。</p><h2>默认配置</h2><p>默认情况下，pnpm v5将创建一个“半严格”的node_modules。 “半严格”意味着您的应用程序将只能导入 <code>package.json</code> 中列出的依赖项(但也有例外)。 然而，你所依赖的那些包将能访问任何其他的包。</p><p>默认配置如下所示：</p><pre><code class="language-ini">; 提升所有包到 node_modules/.pnpm/node_modules
+hoist-pattern[]=*
+
+; 提升所有名称包含types的包至根，以便Typescript能找到
+public-hoist-pattern[]=*types*
+
+; 提升所有ESLint相关的包至根
+public-hoist-pattern[]=*eslint*
+</code></pre><h2>Plug&#x27;n&#x27;Play. 最严格的配置</h2><p>自v5.9起，pnpm支持 <a href="https://yarnpkg.com/features/pnp">Yarn的Plug&#x27;n&#x27;Play</a> 使用PnP，您的应用以及你所依赖的包都只能访问他们声明的依赖关系。 这比设置 <code>hoist = false</code> 更为严格，因为在monorepo中，您的应用甚至连根项目的依赖项也无法访问。</p><p>要使用 Plig&#x27;n&#x27;Play，请设置以下设置:</p><pre><code class="language-ini">node-linker=pnp
+symlink=false
+</code></pre><h2>严格的模块目录</h2><p>如果您尚未准备好使用PnP，也可以通过将提升配置设置为false来仅允许程序包访问其自身的依赖项，确保其“严格”性：</p><pre><code class="language-ini">hoist=false
+</code></pre><p>但是，如果您的某些依赖项需要访问它们在依赖项中没有的程序包，则有两种选择：</p><ol><li><p>创建 <code>pnpmfile.js</code> 并使用一个 <a href="/pnpmfile">hook</a> 将缺少的依赖项添加到包的清单中。</p></li><li><p>添加到 <code>hoist-pattern</code> 中。 例如，如果未找到的模块是 <code>babel-core</code>，则将以下设置添加到 <code>.npmrc</code>：</p><pre><code class="language-ini">hoist-pattern[]=babel-core
+</code></pre></li></ol><h2>最坏的情况 -- 提升至根</h2><p>即使使用pnpm的默认配置，某些工具也可能无法工作，默认配置下所有内容都悬挂在虚拟存储的根目录中，而某些软件包则悬挂在根目录中。 在这种情况下，您可以将所有内容或部分依赖关系提升到modules目录的根目录。</p><p>要将所有内容提升到node_modules的根目录：</p><pre><code class="language-ini">shamefully-hoist=true
+</code></pre><p>按匹配规则提升:</p><pre><code class="language-ini">public-hoist-pattern[]=babel-*
+</code></pre>]]></content:encoded>
         </item>
         <item>
             <title><![CDATA[扁平的 node_modules 不是唯一的方法]]></title>
@@ -20,6 +35,64 @@
             <guid>扁平的 node_modules 不是唯一的方法</guid>
             <pubDate>Wed, 27 May 2020 00:00:00 GMT</pubDate>
             <description><![CDATA[Pnpm 的新用户们经常会问我关于 pnpm 创建的奇怪的 node_modules 结构。 为什么不是平铺的？ 次级依赖去哪了？]]></description>
+            <content:encoded><![CDATA[<p>Pnpm 的新用户们经常会问我关于 pnpm 创建的奇怪的 <code>node_modules</code> 结构。 为什么不是平铺的？ 次级依赖去哪了？</p><blockquote><p>我将默认这篇文章的读者已经熟悉了 npm 与 yarn 创建的平铺的 <code>node_modules</code>。 如果你不明白为什么 npm3 需要开始在 v3 中使用平铺的 <code>node_modules</code>，你可以在这里找到一些前情提要 <a href="https://www.kochan.io/nodejs/why-should-we-use-pnpm.html">Why should we use pnpm?</a>。</p></blockquote><p>所以为什么 pnpm 的 <code>node_modules</code> 会不同寻常？ 让我们创建两个路径并在其中一个执行 <code>npm add express</code> 然后在另一个中执行 <code>pnpm add express</code>。 以下是你在第一个路径的 <code>node_modules</code> 中得到的顶级目录：</p><pre><code class="language-text">.bin
+accepts
+array-flatten
+body-parser
+bytes
+content-disposition
+cookie-signature
+cookie
+debug
+depd
+destroy
+ee-first
+encodeurl
+escape-html
+etag
+express
+</code></pre><p>你可以在<a href="https://github.com/zkochan/comparing-node-modules/tree/master/npm-example/node_modules">这里</a>看到整个目录。</p><p>然后这是你在 pnpm 创建的 <code>node_modules</code> 中得到的：</p><pre><code class="language-text">.pnpm
+.modules.yaml
+express
+</code></pre><p>你可以在<a href="https://github.com/zkochan/comparing-node-modules/tree/master/pnpm5-example/node_modules">这里</a>查看。</p><p>所以所有的依赖去哪了呢？ <code>node_modules</code> 中只有一个叫 <code>.pnpm</code> 的文件夹以及一个叫做 <code>express</code> 的软链。 不错，我们只安装了 <code>express</code>，所以它是唯一一个你的应用必须拥有访问权限的包。</p><blockquote><p>在<a href="https://medium.com/pnpm/pnpms-strictness-helps-to-avoid-silly-bugs-9a15fb306308">这里</a>阅读更多关于为什么 pnpm 的严格是一件好事。</p></blockquote><p>让我们看看在 <code>express</code> 中都有些什么：</p><pre><code class="language-text">▾ node_modules
+  ▸ .pnpm
+  ▾ express
+    ▸ lib
+      History.md
+      index.js
+      LICENSE
+      package.json
+      Readme.md
+    .modules.yaml
+</code></pre><p><code>express</code> 没有 <code>node_modules</code>? <code>express</code> 的所有依赖都去哪里了？</p><p>诀窍是 <code>express</code> 只是一个软链。 当 Node.js 解析依赖的时候，它使用这些依赖的真实位置，所以它不保留软链。 但是你可能就会问了，<code>express</code> 的真实位置在哪呢？</p><p>这里：<a href="https://github.com/zkochan/comparing-node-modules/tree/master/pnpm5-example/node_modules/.pnpm/express@4.17.1/node_modules/express">node_modules/.pnpm/express@4.17.1/node_modules/express</a>。</p><p>OK，所以我们现在知道了 <code>.pnpm/</code> 文件夹的用途。 <code>.pnpm/</code> 以平铺的形式储存着所有的包，所以每个包都可以在这种命名模式的文件夹中被找到：</p><pre><code class="language-text">.pnpm/&lt;name&gt;@&lt;version&gt;/node_modules/&lt;name&gt;
+</code></pre><p>我们称之为虚拟存储目录。</p><p>这个平铺的结构避免了 npm v2 创建的嵌套 <code>node_modules</code> 引起的长路径问题，但与 npm v3,4,5,6 或 yarn v1 创建的平铺的 <code>node_modules</code> 不同的是，它保留了包之间的相互隔离。</p><p>现在让我们看看 <code>express</code> 的真实位置：</p><pre><code class="language-text">  ▾ express
+    ▸ lib
+      History.md
+      index.js
+      LICENSE
+      package.json
+      Readme.md
+</code></pre><p>这是个骗局吗？ 还是没有 <code>node_modules</code>！ Pnmp 的 <code>node_modules</code> 结构的第二个诀窍是包的依赖项与依赖包的实际位置位于同一目录级别。 所以 <code>express</code> 的依赖不在 <code>.pnpm/express@4.17.1/node_modules/express/node_modules/</code> 而是在 <a href="https://github.com/zkochan/comparing-node-modules/tree/master/pnpm5-example/node_modules/.pnpm/express@4.17.1/node_modules">.pnpm/express@4.17.1/node_modules/</a>：</p><pre><code class="language-text">▾ node_modules
+  ▾ .pnpm
+    ▸ accepts@1.3.5
+    ▸ array-flatten@1.1.1
+    ...
+    ▾ express@4.16.3
+      ▾ node_modules
+        ▸ accepts
+        ▸ array-flatten
+        ▸ body-parser
+        ▸ content-disposition
+        ...
+        ▸ etag
+        ▾ express
+          ▸ lib
+            History.md
+            index.js
+            LICENSE
+            package.json
+            Readme.md
+</code></pre><p><code>express</code> 所有的依赖都软链至了 <code>node_modules/.pnpm/</code> 中的对应目录。 把 <code>express</code> 的依赖放置在同一级别避免了循环的软链。</p><p>正如你所看到的，即使 pnpm 的 <code>node_modules</code> 结构一开始看起来很奇怪：</p><ol><li>它完全适配了 Node.js。</li><li>包与包的依赖很好的被分组在一起。</li></ol><p>有 peer 依赖的包的结构<a href="/how-peers-are-resolved">更加复杂</a>一点点但思路是一样的：使用软链与平铺目录来构建一个嵌套结构。</p>]]></content:encoded>
         </item>
     </channel>
 </rss>

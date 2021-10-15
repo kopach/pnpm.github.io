@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
     <channel>
         <title>pnpm Blog</title>
         <link>https://pnpm.io/fr/blog</link>
@@ -13,6 +13,21 @@
             <guid>Options de configuration des node_modules avec pnpm</guid>
             <pubDate>Sat, 17 Oct 2020 00:00:00 GMT</pubDate>
             <description><![CDATA[Il existe de nombreuses façons de créer un dossier nodemodules. Votre objectif doit être de créer le plus strict, mais si ce n'est pas possible, il y a aussi des options pour faire un nodemodules en vrac.]]></description>
+            <content:encoded><![CDATA[<p>Il existe de nombreuses façons de créer un dossier node_modules. Votre objectif doit être de créer le plus strict, mais si ce n&#x27;est pas possible, il y a aussi des options pour faire un node_modules en vrac.</p><h2>Configuration par défaut</h2><p>Par défaut, pnpm v5 créera un node_modules semi-strict. Semi-strict signifie que votre application ne pourra require que des packages ajoutés en tant que dépendances au <code>package.json</code> (à quelques exceptions près). Cependant, vos dépendances pourront accéder à tous les packages.</p><p>La configuration par défaut ressemble à ceci:</p><pre><code class="language-ini">; Tous les packages sont hissés vers node_modules/.pnpm/node_modules
+hoist-pattern[]=*
+
+; Tous les types sont hissés à la racine afin de rendre TypeScript heureux
+public-hoist-pattern[]=*types*
+
+; Tous les packages liés à ESLint sont également hissés à la racine
+public-hoist-pattern[]=*eslint*
+</code></pre><h2>Plug&#x27;n&#x27;Play. La configuration la plus stricte</h2><p>pnpm prend en charge <a href="https://yarnpkg.com/features/pnp">Yarn&#x27;s Plug&#x27;n&#x27;Play</a> depuis la version 5.9. Avec PnP, votre application et les dépendances de votre application n&#x27;auront accès qu&#x27;à leurs dépendances déclarées. C&#x27;est encore plus strict que de définir <code>hoist=false</code> car à l&#x27;intérieur d&#x27;un monodépôt, votre application ne pourra même pas accéder aux dépendances du projet racine.</p><p>Pour utiliser Plug&#x27;n&#x27;Play, définissez ces paramètres:</p><pre><code class="language-ini">node-linker=pnp
+symlink=false
+</code></pre><h2>Un répertoire de node_modules strict et traditionnel</h2><p>Si vous n&#x27;êtes pas encore prêt à utiliser PnP, vous pouvez toujours être strict et autoriser uniquement les packages à accéder à leurs propres dépendances en définissant la configuration de hoist sur false:</p><pre><code class="language-ini">hoist=false
+</code></pre><p>Cependant, si certaines de vos dépendances tentent d&#x27;accéder à des packages qui ne figurent pas dans leurs dépendances, vous avez deux options:</p><ol><li><p>Créez un <code>pnpmfile.js</code> et utilisez un <a href="/pnpmfile">crochet</a> pour ajouter la dépendance manquante au manifeste du package.</p></li><li><p>Ajoutez un pattern au paramètre <code>hoist-pattern</code>. Par exemple, si le module non trouvé est <code>babel-core</code>, ajoutez le paramètre suivant à <code>.npmrc</code>:</p><pre><code class="language-ini">hoist-pattern[]=babel-core
+</code></pre></li></ol><h2>Le pire des cas - hisser à la racine</h2><p>Certains outils peuvent ne pas fonctionner même avec la configuration par défaut de pnpm, qui héberge tout à la racine du magasin virtuel et quelques packages à la racine. Dans ce cas, vous pouvez hisser tout ou un sous-ensemble de dépendances à la racine du répertoire des modules.</p><p>Tout placer à la racine de node_modules:</p><pre><code class="language-ini">shamefully-hoist=true
+</code></pre><p>Ne hisser que les packages qui correspondent à un modèle:</p><pre><code class="language-ini">public-hoist-pattern[]=babel-*
+</code></pre>]]></content:encoded>
         </item>
         <item>
             <title><![CDATA[Flat node_modules n'est pas le seul moyen]]></title>
@@ -20,6 +35,64 @@
             <guid>Flat node_modules n'est pas le seul moyen</guid>
             <pubDate>Wed, 27 May 2020 00:00:00 GMT</pubDate>
             <description><![CDATA[Les nouveaux utilisateurs de pnpm me posent souvent des questions sur la structure bizarre du dossier node_modules que pnpm créé. Pourquoi n'est-il pas plat ? Où sont toutes les sous-dépendances ?]]></description>
+            <content:encoded><![CDATA[<p>Les nouveaux utilisateurs de pnpm me posent souvent des questions sur la structure bizarre du dossier <code>node_modules</code> que pnpm créé. Pourquoi n&#x27;est-il pas plat ? Où sont toutes les sous-dépendances ?</p><blockquote><p>Je vais supposer que les lecteurs de cet article sont déjà familiers avec les <code>node_modules</code> plats créés par npm et Yarn. Si vous ne comprenez pas pourquoi npm 3 a dû commencer à utiliser <code>node_modules</code> en v3, vous pouvez trouver un peu de préhistoire dans <a href="https://www.kochan.io/nodejs/why-should-we-use-pnpm.html">Pourquoi devrait-on utiliser pnpm ?</a>.</p></blockquote><p>Alors pourquoi les <code>node_modules</code> de pnpm sont inhabituels ? Créons deux répertoires et éxecutons <code>npm add express</code> dans l&#x27;un d&#x27;eux et <code>pnpm add express</code> dans l&#x27;autre. Voilà ce que vous obtenez dans le <code>node_modules</code> du premier répertoire:</p><pre><code class="language-text">.bin
+accepts
+array-flatten
+body-parser
+bytes
+content-disposition
+cookie-signature
+cookie
+debug
+depd
+destroy
+ee-first
+encodeurl
+escape-html
+etag
+express
+</code></pre><p>Vous pouvez voir tout le répertoire <a href="https://github.com/zkochan/comparing-node-modules/tree/master/npm-example/node_modules">ici</a>.</p><p>Et voici ce que vous obtenez dans les <code>node_modules</code> créés par pnpm:</p><pre><code class="language-text">.pnpm
+.modules.yaml
+express
+</code></pre><p>Vous pouvez vérifier <a href="https://github.com/zkochan/comparing-node-modules/tree/master/pnpm5-example/node_modules">ici</a>.</p><p>Alors, où sont toues les dépendances ? Il y a qu&#x27;un seul dossier dans les <code>node_modules</code> appelé <code>.pnpm</code> et il y a un lien symbolique appelé <code>express</code>. Et bien, nous n&#x27;avons installé que <code>express</code>, c&#x27;est donc le seul package auquel votre application doit avoir accès</p><blockquote><p>En savoir plus sur pourquoi la rigueur de pnpm est une bonne chose <a href="https://medium.com/pnpm/pnpms-strictness-helps-to-avoid-silly-bugs-9a15fb306308">ici</a></p></blockquote><p>Voyons ce qu&#x27;il y a à l&#x27;intérieur d&#x27;<code>express</code>:</p><pre><code class="language-text">▾ node_modules
+  ▸ .pnpm
+  ▾ express
+    ▸ lib
+      History.md
+      index.js
+      LICENSE
+      package.json
+      Readme.md
+    .modules.yaml
+</code></pre><p><code>express</code> n&#x27;a pas de <code>node_modules</code> ? Où sont toutes les dépendances d&#x27;<code>express</code> ?</p><p>L&#x27;astuce est qu&#x27;<code>express</code> n&#x27;est qu&#x27;un lien symbolique. Lorsque Node.js résout les dépendances, il utilise leurs emplacements réels, il ne conserve donc pas les liens symboliques. Mais où est l&#x27;emplacement réel d&#x27;<code>express</code>, vous vous demandez ?</p><p>Ici: <a href="https://github.com/zkochan/comparing-node-modules/tree/master/pnpm5-example/node_modules/.pnpm/express@4.17.1/node_modules/express">node_modules/.pnpm/express@4.17.1/node_modules/express</a>.</p><p>OK, alors maintenant nous connaissons l&#x27;utilité du dossier <code>.pnpm/</code>. <code>.pnpm/</code> stocke tous les packages dans une structure de dossiers plats, de sorte que chaque package peut être trouvé dans un dossier nommé par ce modèle:</p><pre><code class="language-text">.pnpm/&lt;name&gt;@&lt;version&gt;/node_modules/&lt;name&gt;
+</code></pre><p>On appelle ça le dossier du stockage virtuel.</p><p>Cette structure plate évite les problèmes de long chemin causés par les <code>node_modules</code> créés par npm v2 mais maintient les packages isolés, contrairement aux <code>node_modules</code> plats créés par npm v 3, 4, 5, 6 ou bien Yarn v1.</p><p>Regardons maintenant le réel emplacement d&#x27;<code>express</code>:</p><pre><code class="language-text">  ▾ express
+    ▸ lib
+      History.md
+      index.js
+      LICENSE
+      package.json
+      Readme.md
+</code></pre><p>Est-ce une arnaque ? Il manque encore <code>node_modules</code> ! La deuxième astuce de la structure des <code>node_modules</code> de pnpm est que les dépendances des packages se trouvent au même niveau de répertoire que l&#x27;emplacement réel du package dépendant. Donc les dépendances d&#x27;<code>express</code> ne sont pas dans <code>.pnpm/express@4.17.1/node_modules/express/node_modules/</code> mais dans <a href="https://github.com/zkochan/comparing-node-modules/tree/master/pnpm5-example/node_modules/.pnpm/express@4.17.1/node_modules">.pnpm/express@4.17.1/node_modules/</a>:</p><pre><code class="language-text">▾ node_modules
+  ▾ .pnpm
+    ▸ accepts@1.3.5
+    ▸ array-flatten@1.1.1
+    ...
+    ▾ express@4.16.3
+      ▾ node_modules
+        ▸ accepts
+        ▸ array-flatten
+        ▸ body-parser
+        ▸ content-disposition
+        ...
+        ▸ etag
+        ▾ express
+          ▸ lib
+            History.md
+            index.js
+            LICENSE
+            package.json
+            Readme.md
+</code></pre><p>Toutes les dépendances d&#x27;<code>express</code> sont des liens symboliques vers des dossiers appropriés dans <code>node_modules/.pnpm/</code>. Placer les dépendances d&#x27;<code>express</code> un niveau supérieur permet d&#x27;éviter les liens symboliques circulaires.</p><p>Donc, comme vous pouvez le voir, même si la structure <code>node_modules</code> pnpm semble inhabituelle au premier abord:</p><ol><li>il est complètement compatible avec Node.js</li><li>les packages sont bien regroupés avec leurs dépendances</li></ol><p>La structure est un peu <a href="/how-peers-are-resolved">plus complexe</a> pour les packages avec des dépendances paires mais l&#x27;idée est la même: utiliser des liens symboliques pour créer une imbrication avec une structure de dossier plate.</p>]]></content:encoded>
         </item>
     </channel>
 </rss>

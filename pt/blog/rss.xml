@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
     <channel>
         <title>pnpm Blog</title>
         <link>https://pnpm.io/pt/blog</link>
@@ -13,6 +13,21 @@
             <guid>Node-Modules configuration options with pnpm</guid>
             <pubDate>Sat, 17 Oct 2020 00:00:00 GMT</pubDate>
             <description><![CDATA[There are many ways to create a nodemodules directory. Your goal must be to create the most strict one but if that is not possible, there are options to make a loose nodemodules as well.]]></description>
+            <content:encoded><![CDATA[<p>There are many ways to create a node_modules directory. Your goal must be to create the most strict one but if that is not possible, there are options to make a loose node_modules as well.</p><h2>The default setup</h2><p>By default, pnpm v5 will create a semi-strict node_modules. Semi-strict means that your application will only be able to require packages that are added as dependencies to <code>package.json</code> (with a few exceptions). However, your dependencies will be able to access any packages.</p><p>The default configuration looks like this:</p><pre><code class="language-ini">; All packages are hoisted to node_modules/.pnpm/node_modules
+hoist-pattern[]=*
+
+; All types are hoisted to the root in order to make TypeScript happy
+public-hoist-pattern[]=*types*
+
+; All ESLint-related packages are hoisted to the root as well
+public-hoist-pattern[]=*eslint*
+</code></pre><h2>Plug&#x27;n&#x27;Play. The strictest configuration</h2><p>pnpm supports <a href="https://yarnpkg.com/features/pnp">Yarn&#x27;s Plug&#x27;n&#x27;Play</a> since v5.9. With PnP, both your application and the dependencies of your application will have access only to their declared dependencies. This is even stricter then setting <code>hoist=false</code> because inside a monorepo, you&#x27;re application will not be able to access even the dependencies of the root project.</p><p>To use Plug&#x27;n&#x27;Play, set these settings:</p><pre><code class="language-ini">node-linker=pnp
+symlink=false
+</code></pre><h2>A strict, traditional modules directory</h2><p>If you are not ready to use PnP yet, you can still be strict and only allow packages to access their own dependencies by setting the hoist configuration to false:</p><pre><code class="language-ini">hoist=false
+</code></pre><p>However, if some of your dependencies are trying to access packages that they don&#x27;t have in dependencies, you have two options:</p><ol><li><p>Create a <code>pnpmfile.js</code> and use a <a href="/pnpmfile">hook</a> to add the missing dependency to the package&#x27;s manifest.</p></li><li><p>Add a pattern to the <code>hoist-pattern</code> setting. For instance, if the not found module is <code>babel-core</code>, add the following setting to <code>.npmrc</code>:</p><pre><code class="language-ini">hoist-pattern[]=babel-core
+</code></pre></li></ol><h2>The worst case - hoisting to the root</h2><p>Some tools might not work even with the default configuration of pnpm, which hoists everything to the root of the virtual store and some packages to the root. In this case, you can hoist either everything or a subset of dependencies to the root of the modules directory.</p><p>Hoisting everything to the the root of node_modules:</p><pre><code class="language-ini">shamefully-hoist=true
+</code></pre><p>Hoisting only packages that match a pattern:</p><pre><code class="language-ini">public-hoist-pattern[]=babel-*
+</code></pre>]]></content:encoded>
         </item>
         <item>
             <title><![CDATA[Flat node_modules is not the only way]]></title>
@@ -20,6 +35,64 @@
             <guid>Flat node_modules is not the only way</guid>
             <pubDate>Wed, 27 May 2020 00:00:00 GMT</pubDate>
             <description><![CDATA[New users of pnpm frequently ask me about the weird structure of node_modules that pnpm creates. Why is it not flat? Where are all the sub-dependencies?]]></description>
+            <content:encoded><![CDATA[<p>New users of pnpm frequently ask me about the weird structure of <code>node_modules</code> that pnpm creates. Why is it not flat? Where are all the sub-dependencies?</p><blockquote><p>I am going to assume that readers of the article are already familiar with flat <code>node_modules</code> created by npm and Yarn. If you don&#x27;t understand why npm 3 had to start using flat <code>node_modules</code> in v3, you can find some prehistory in <a href="https://www.kochan.io/nodejs/why-should-we-use-pnpm.html">Why should we use pnpm?</a>.</p></blockquote><p>So why is pnpm&#x27;s <code>node_modules</code> unusual? Let&#x27;s create two directories and run <code>npm add express</code> in one of them and <code>pnpm add express</code> in the other one. Here&#x27;s the top of what you get in the first directory&#x27;s <code>node_modules</code>:</p><pre><code class="language-text">.bin
+accepts
+array-flatten
+body-parser
+bytes
+content-disposition
+cookie-signature
+cookie
+debug
+depd
+destroy
+ee-first
+encodeurl
+escape-html
+etag
+express
+</code></pre><p>You can see the whole directory <a href="https://github.com/zkochan/comparing-node-modules/tree/master/npm-example/node_modules">here</a>.</p><p>And this is what you get in the <code>node_modules</code> created by pnpm:</p><pre><code class="language-text">.pnpm
+.modules.yaml
+express
+</code></pre><p>You can check it <a href="https://github.com/zkochan/comparing-node-modules/tree/master/pnpm5-example/node_modules">here</a>.</p><p>So where are all the dependencies? There is only one folder in the <code>node_modules</code> called <code>.pnpm</code> and a symlink called <code>express</code>. Well, we installed only <code>express</code>, so that is the only package that your application has to have access to</p><blockquote><p>Read more about why pnpm&#x27;s strictness is a good thing <a href="https://medium.com/pnpm/pnpms-strictness-helps-to-avoid-silly-bugs-9a15fb306308">here</a></p></blockquote><p>Let&#x27;s see what is inside <code>express</code>:</p><pre><code class="language-text">▾ node_modules
+  ▸ .pnpm
+  ▾ express
+    ▸ lib
+      History.md
+      index.js
+      LICENSE
+      package.json
+      Readme.md
+    .modules.yaml
+</code></pre><p><code>express</code> has no <code>node_modules</code>? Where are all the dependencies of <code>express</code>?</p><p>The trick is that <code>express</code> is just a symlink. When Node.js resolves dependencies, it uses their real locations, so it does not preserve symlinks. But where is the real location of <code>express</code>, you might ask?</p><p>Here: <a href="https://github.com/zkochan/comparing-node-modules/tree/master/pnpm5-example/node_modules/.pnpm/express@4.17.1/node_modules/express">node_modules/.pnpm/express@4.17.1/node_modules/express</a>.</p><p>OK, so now we know the purpose of the <code>.pnpm/</code> folder. <code>.pnpm/</code> stores all the packages in a flat folder structure, so every package can be found in a folder named by this pattern:</p><pre><code class="language-text">.pnpm/&lt;name&gt;@&lt;version&gt;/node_modules/&lt;name&gt;
+</code></pre><p>We call it the virtual store directory.</p><p>This flat structure avoids the long path issues that were caused by the nested <code>node_modules</code> created by npm v2 but keeps packages isolated unlike the flat <code>node_modules</code> created by npm v3,4,5,6 or Yarn v1.</p><p>Now let&#x27;s look into the real location of <code>express</code>:</p><pre><code class="language-text">  ▾ express
+    ▸ lib
+      History.md
+      index.js
+      LICENSE
+      package.json
+      Readme.md
+</code></pre><p>Is it a scam? It still lacks <code>node_modules</code>! The second trick of pnpm&#x27;s <code>node_modules</code> structure is that the dependencies of packages are on the same directory level on which the real location of the dependent package. So dependencies of <code>express</code> are not in <code>.pnpm/express@4.17.1/node_modules/express/node_modules/</code> but in <a href="https://github.com/zkochan/comparing-node-modules/tree/master/pnpm5-example/node_modules/.pnpm/express@4.17.1/node_modules">.pnpm/express@4.17.1/node_modules/</a>:</p><pre><code class="language-text">▾ node_modules
+  ▾ .pnpm
+    ▸ accepts@1.3.5
+    ▸ array-flatten@1.1.1
+    ...
+    ▾ express@4.16.3
+      ▾ node_modules
+        ▸ accepts
+        ▸ array-flatten
+        ▸ body-parser
+        ▸ content-disposition
+        ...
+        ▸ etag
+        ▾ express
+          ▸ lib
+            History.md
+            index.js
+            LICENSE
+            package.json
+            Readme.md
+</code></pre><p>All the dependencies of <code>express</code> are symlinks to appropriate directories in <code>node_modules/.pnpm/</code>. Placing dependencies of <code>express</code> one level up allows avoiding circular symlinks.</p><p>So as you can see, even though pnpm&#x27;s <code>node_modules</code> structure seems unusual at first:</p><ol><li>it is completely Node.js compatible</li><li>packages are nicely grouped with their dependencies</li></ol><p>The structure is a little bit <a href="/how-peers-are-resolved">more complex</a> for packages with peer dependencies but the idea is the same: using symlinks to create a nesting with a flat directory structure.</p>]]></content:encoded>
         </item>
     </channel>
 </rss>
